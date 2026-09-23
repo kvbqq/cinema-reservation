@@ -1,0 +1,24 @@
+<main>
+  <h1>Cinema Reservation</h1>
+
+  <p>Check the connection to our Spring Boot backend.</p>
+
+  <button type="button" (click)="checkBackend()" [disabled]="loading()">
+    {{ loading() ? 'Checking...' : 'Check backend' }}
+  </button>
+
+  <section aria-live="polite">
+    @if (loading()) {
+      <p>Contacting the backend...</p>
+    }
+
+    @if (backendStatus(); as result) {
+      <h2>{{ result.application }}</h2>
+      <p>Status: {{ result.status }}</p>
+    }
+
+    @if (error(); as message) {
+      <p role="alert">{{ message }}</p>
+    }
+  </section>
+</main>

@@ -24,4 +24,25 @@ class BackendApplicationTests {
 
 		assertEquals("cinema_test", databaseName);
 	}
+
+	@Test
+	void appliesInitialMigration() {
+		Boolean migrationSucceeded = jdbcTemplate.queryForObject(
+				"""
+                SELECT success
+                FROM flyway_schema_history
+                WHERE version = '1'
+                """,
+				Boolean.class
+		);
+
+		assertEquals(Boolean.TRUE, migrationSucceeded);
+
+		String tableName = jdbcTemplate.queryForObject(
+				"SELECT to_regclass('public.app_user')::text",
+				String.class
+		);
+
+		assertEquals("app_user", tableName);
+	}
 }

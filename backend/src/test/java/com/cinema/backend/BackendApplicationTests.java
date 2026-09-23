@@ -1,13 +1,48 @@
 package com.cinema.backend;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
+@Import(TestcontainersConfiguration.class)
 class BackendApplicationTests {
 
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
 	@Test
-	void contextLoads() {
+	void connectsToTestDatabase() {
+		String databaseName = jdbcTemplate.queryForObject(
+				"SELECT current_database()",
+				String.class
+		);
+
+		assertEquals("cinema_test", databaseName);
 	}
 
+	@Test
+	void appliesInitialMigration() {
+		Boolean migrationSucceeded = jdbcTemplate.queryForObject(
+				"""
+                SELECT success
+                FROM flyway_schema_history
+                WHERE version = '1'
+                """,
+				Boolean.class
+		);
+
+		assertEquals(Boolean.TRUE, migrationSucceeded);
+
+		String tableName = jdbcTemplate.queryForObject(
+				"SELECT to_regclass('public.app_user')::text",
+				String.class
+		);
+
+		assertEquals("app_user", tableName);
+	}
 }

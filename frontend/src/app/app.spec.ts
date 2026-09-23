@@ -60,4 +60,32 @@ describe('App', () => {
     expect(page.textContent).toContain('Status: running');
     expect(button.disabled).toBe(false);
   });
+
+  it('should display an error when the request fails', () => {
+    const fixture = TestBed.createComponent(App);
+    const http = TestBed.inject(HttpTestingController);
+
+    fixture.detectChanges();
+
+    const page = fixture.nativeElement as HTMLElement;
+    const button = page.querySelector('button') as HTMLButtonElement;
+
+    button.click();
+    fixture.detectChanges();
+
+    const request = http.expectOne({
+      method: 'GET',
+      url: '/api/status',
+    });
+
+    request.error(new ProgressEvent('network error'));
+
+    fixture.detectChanges();
+
+    expect(page.querySelector('[role="alert"]')?.textContent).toContain(
+      'Could not reach the backend',
+    );
+
+    expect(button.disabled).toBe(false);
+  });
 });
